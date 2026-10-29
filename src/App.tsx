@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
-import { supabase, supabaseConfigurado } from './lib/supabase'
+import { diagnosticoSupabase, supabase, supabaseConfigurado } from './lib/supabase'
 import { Orbe } from './components/ui'
 import Login from './pages/Login'
 import Painel from './pages/Painel'
@@ -53,11 +53,22 @@ export default function App() {
 
   if (!supabaseConfigurado)
     return (
-      <div className="mx-auto max-w-lg p-6 text-sm">
-        <h1 className="mb-2 text-lg font-semibold">Falta configurar o Supabase</h1>
+      <div className="mx-auto max-w-lg space-y-4 p-6 text-sm">
+        <h1 className="text-lg font-semibold">Falta configurar o Supabase</h1>
+        <div className="vidro rounded-2xl p-4">
+          <div className="mb-2 font-medium">O que este site encontrou:</div>
+          <ul className="space-y-1">
+            <li>{diagnosticoSupabase.url ? (diagnosticoSupabase.urlFormatoOk ? '✅' : '⚠️') : '❌'} <code>VITE_SUPABASE_URL</code>{!diagnosticoSupabase.url ? ' — não existe neste site' : !diagnosticoSupabase.urlFormatoOk ? ' — existe, mas o formato não parece uma URL do Supabase (https://….supabase.co)' : ' — ok'}</li>
+            <li>{diagnosticoSupabase.chave ? (diagnosticoSupabase.chaveFormatoOk ? '✅' : '⚠️') : '❌'} <code>VITE_SUPABASE_ANON_KEY</code>{!diagnosticoSupabase.chave ? ' — não existe neste site' : !diagnosticoSupabase.chaveFormatoOk ? ' — existe, mas o valor não parece uma chave do Supabase' : ' — ok'}</li>
+          </ul>
+        </div>
         <p>
-          Copie <code>.env.example</code> para <code>.env</code>, preencha <code>VITE_SUPABASE_URL</code> e{' '}
-          <code>VITE_SUPABASE_ANON_KEY</code> e reinicie o <code>npm run dev</code>. Veja o README.
+          <b>Se estiver na Vercel:</b> crie as duas variáveis em Settings → Environment Variables (marcadas para <b>Production</b>) e depois faça um{' '}
+          <b>Redeploy</b>. As variáveis só entram em deploys novos. Se já fez isso, abra o site numa janela anônima: o navegador pode estar mostrando uma
+          cópia antiga.
+        </p>
+        <p className="text-slate-500">
+          No computador: copie <code>.env.example</code> para <code>.env</code>, preencha os dois valores e reinicie o <code>npm run dev</code>.
         </p>
       </div>
     )
