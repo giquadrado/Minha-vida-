@@ -1,20 +1,56 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Botao, Campo, Orbe, lerForm } from '../components/ui'
 
-export default function Login() {
-  const [estado, setEstado] = useState<'form' | 'enviando' | 'enviado'>('form')
-  const [erro, setErro] = useState('')
+/** Mensagens do Supabase em português, com o que fazer em cada caso. */
+function traduzir(msg: string): string {
+  if (/rate limit|too many|only request this after|security purposes/i.test(msg))
+    return 'Foram pedidos e-mails demais em pouco tempo (o Supabase limita isso). Espere cerca de 1 hora e tente de novo. Se já chegou algum e-mail, use o código ou o link dele.'
+  if (/redirect|not allowed|url/i.test(msg)) return 'Este endereço ainda não foi liberado no Supabase (Authentication → URL Configuration).'
+  if (/expired|invalid|token/i.test(msg)) return 'Código inválido ou vencido. Peça um novo e use o mais recente.'
+  return msg
+}
 
-  async function entrar(e: React.FormEvent<HTMLFormElement>) {
-    const { email } = lerForm(e)
+const ESPERA_REENVIO = 60
+
+export default function Login() {
+  const [estado, setEstado] = useState<'form' | 'enviando' | 'enviado' | 'entrando'>('form')
+  const [email, setEmail] = useState('')
+  const [codigo, setCodigo] = useState('')
+  const [erro, setErro] = useState('')
+  const [espera, setEspera] = useState(0)
+
+  useEffect(() => {
+    if (espera <= 0) return
+    const t = window.setTimeout(() => setEspera(espera - 1), 1000)
+    return () => window.clearTimeout(t)
+  }, [espera])
+
+  async function enviar(para: string) {
     setEstado('enviando')
     setErro('')
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } })
+    const { error } = await supabase.auth.signInWithOtp({ email: para, options: { emailRedirectTo: window.location.origin } })
     if (error) {
-      setErro(error.message)
-      setEstado('form')
-    } else setEstado('enviado')
+      setErro(traduzir(error.message))
+      setEstado(email && estadoAnteriorEnviado ? 'enviado' : 'form')
+    } else {
+      setEmail(para)
+      setEstado('enviado')
+      setEspera(ESPERA_REENVIO)
+    }
+  }
+  const estadoAnteriorEnviado = estado === 'enviado'
+
+  async function entrarComCodigo(e: React.FormEvent) {
+    e.preventDefault()
+    setEstado('entrando')
+    setErro('')
+    const { error } = await supabase.auth.verifyOtp({ email, token: codigo.replace(/\s/g, ''), type: 'email' })
+    if (error) {
+      setErro(traduzir(error.message))
+      setEstado('enviado')
+    }
+    // sucesso: o App percebe a sessão e troca de tela sozinho
   }
 
   return (
@@ -28,19 +64,55 @@ export default function Login() {
         <p className="mb-6 mt-2 text-sm leading-relaxed text-slate-500">
           Seu cantinho para organizar a faculdade sem perder o fôlego: faltas, notas, horários e o caminho até a formatura. 💜
         </p>
-        {estado === 'enviado' ? (
-          <div className="animate-subir rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-800">
-            <div className="mb-1 text-2xl">📬</div>
-            Pronto! Enviamos um link de acesso para o seu e-mail. Abra-o neste aparelho para entrar.
+
+        {estado === 'enviado' || estado === 'entrando' ? (
+          <div className="animate-subir space-y-4">
+            <div className="rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-800">
+              <div className="mb-1 text-2xl">📬</div>
+              Enviamos um e-mail para <b>{email}</b>. Veja também a caixa de <b>spam</b>.
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
+                <li>Se o e-mail trouxer um <b>código</b>, digite abaixo.</li>
+                <li>Se trouxer um <b>link</b>, abra-o no mesmo navegador em que você está aqui (no celular, toque em “abrir no navegador”, não no leitor do app de e-mail).</li>
+              </ul>
+            </div>
+            <form onSubmit={entrarComCodigo} className="space-y-3">
+              <Campo
+                rotulo="Código do e-mail"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="123456"
+                maxLength={12}
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value.replace(/[^\d\s]/g, ''))}
+              />
+              {erro && <p className="text-sm text-rose-600">{erro}</p>}
+              <Botao className="w-full py-3" disabled={estado === 'entrando' || codigo.replace(/\s/g, '').length < 6}>
+                {estado === 'entrando' ? 'Entrando…' : 'Entrar com o código'}
+              </Botao>
+            </form>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+              <button className="cursor-pointer underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-60" disabled={espera > 0} onClick={() => enviar(email)}>
+                {espera > 0 ? `Reenviar em ${espera}s` : 'Reenviar e-mail'}
+              </button>
+              <button className="cursor-pointer underline" onClick={() => { setEstado('form'); setErro(''); setCodigo('') }}>
+                Usar outro e-mail
+              </button>
+            </div>
           </div>
         ) : (
-          <form onSubmit={entrar} className="space-y-4">
-            <Campo rotulo="Seu e-mail" name="email" type="email" required autoComplete="email" placeholder="voce@email.com" />
+          <form
+            onSubmit={(e) => {
+              const f = lerForm(e)
+              enviar(f.email.trim())
+            }}
+            className="space-y-4"
+          >
+            <Campo rotulo="Seu e-mail" name="email" type="email" required autoComplete="email" placeholder="voce@email.com" defaultValue={email} />
             {erro && <p className="text-sm text-rose-600">{erro}</p>}
             <Botao className="w-full py-3" disabled={estado === 'enviando'}>
-              {estado === 'enviando' ? 'Enviando…' : 'Entrar com link mágico ✨'}
+              {estado === 'enviando' ? 'Enviando…' : 'Receber acesso por e-mail ✨'}
             </Botao>
-            <p className="text-center text-xs text-slate-400">Sem senha: a gente manda um link para o seu e-mail.</p>
+            <p className="text-center text-xs text-slate-400">Sem senha: a gente manda um link (e um código) para o seu e-mail.</p>
           </form>
         )}
       </div>
