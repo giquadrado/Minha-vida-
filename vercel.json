@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/((?!api/|modelos/|assets/|sw.js|workbox-|manifest.webmanifest|registerSW.js|icon.svg|modelo-grade.csv).*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/api/calendario.ics", "destination": "/api/calendario" },
+    { "source": "/((?!api/|modelos/|assets/|sw.js|workbox-|manifest.webmanifest|registerSW.js|icon.svg|modelo-grade.csv).*)", "destination": "/index.html" }
+  ]
 }
