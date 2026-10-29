@@ -1,0 +1,3 @@
+{
+  "rewrites": [{ "source": "/((?!api/|modelos/|assets/|sw.js|workbox-|manifest.webmanifest|registerSW.js|icon.svg|modelo-grade.csv).*)", "destination": "/index.html" }]
+}

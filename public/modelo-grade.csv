@@ -1,0 +1,6 @@
+periodo;codigo;nome;carga_horaria;tipo;pre_requisitos;status
+1;MAT101;Cálculo I;60;obrigatoria;;aprovada
+1;INF101;Algoritmos;60;obrigatoria;;aprovada
+2;MAT201;Cálculo II;60;obrigatoria;MAT101;cursando
+2;INF201;Estrutura de Dados;60;obrigatoria;INF101;pendente
+;OPT001;Tópicos Especiais;30;optativa;;pendente

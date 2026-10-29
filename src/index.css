@@ -1,0 +1,169 @@
+@import 'tailwindcss';
+
+/*
+ * Tema "aurora": escuro, com brilho violeta/ciano e um toque de coral para o acolhimento.
+ * As escalas slate/indigo/emerald/amber/rose foram remapeadas aqui, então as classes
+ * (text-slate-500, bg-indigo-100…) já saem no tema escuro em todas as telas.
+ */
+@theme {
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-pixel: 'Press Start 2P', ui-monospace, monospace;
+
+  --color-card: rgb(255 255 255 / 0.055);
+
+  --color-slate-50: rgb(255 255 255 / 0.04);
+  --color-slate-100: rgb(255 255 255 / 0.08);
+  --color-slate-200: rgb(255 255 255 / 0.1);
+  --color-slate-300: rgb(255 255 255 / 0.17);
+  --color-slate-400: #8a92b8;
+  --color-slate-500: #a4acd0;
+  --color-slate-600: #c2c8e6;
+  --color-slate-700: #d6daf1;
+  --color-slate-800: #e7eaf8;
+  --color-slate-900: #f4f6ff;
+
+  --color-indigo-50: rgb(124 92 255 / 0.14);
+  --color-indigo-100: rgb(124 92 255 / 0.22);
+  --color-indigo-400: #9f86ff;
+  --color-indigo-500: #8b6cff;
+  --color-indigo-600: #7c5cff;
+  --color-indigo-700: #b9a8ff;
+  --color-indigo-800: #d3c9ff;
+  --color-indigo-900: #ece8ff;
+
+  --color-emerald-50: rgb(52 211 153 / 0.1);
+  --color-emerald-100: rgb(52 211 153 / 0.18);
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #2dd4a0;
+  --color-emerald-700: #6ee7b7;
+  --color-emerald-800: #9af0cf;
+
+  --color-amber-100: rgb(251 191 36 / 0.18);
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f5b021;
+  --color-amber-700: #fcd34d;
+  --color-amber-800: #fde08a;
+  --color-amber-900: #fff1c7;
+
+  --color-rose-100: rgb(251 113 133 / 0.18);
+  --color-rose-500: #fb7185;
+  --color-rose-600: #f43f5e;
+  --color-rose-700: #e11d48;
+  --color-rose-800: #fda4af;
+
+  --animate-subir: subir 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-flutuar: flutuar 6s ease-in-out infinite;
+  --animate-pulsar: pulsar 2.4s ease-in-out infinite;
+}
+
+@keyframes subir {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes flutuar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes pulsar {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(124 92 255 / 0.45); }
+  50% { box-shadow: 0 0 0 10px rgb(124 92 255 / 0); }
+}
+@keyframes aurora {
+  0% { background-position: 0% 0%, 100% 0%, 50% 100%; }
+  100% { background-position: 12% 8%, 88% 10%, 40% 92%; }
+}
+@keyframes confete {
+  0% { transform: translate3d(0, -10vh, 0) rotate(0); opacity: 1; }
+  100% { transform: translate3d(var(--dx), 105vh, 0) rotate(720deg); opacity: 0.9; }
+}
+@keyframes brilho {
+  to { background-position: 200% center; }
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100vh;
+  background: #080b1a;
+  color: var(--color-slate-900);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(50rem 38rem at 8% -8%, rgb(124 92 255 / 0.34), transparent 62%),
+    radial-gradient(44rem 36rem at 100% 2%, rgb(34 211 238 / 0.16), transparent 62%),
+    radial-gradient(40rem 30rem at 50% 112%, rgb(255 157 108 / 0.15), transparent 62%);
+  background-size: 140% 140%, 140% 140%, 140% 140%;
+  animation: aurora 20s ease-in-out infinite alternate;
+}
+
+input,
+select,
+textarea {
+  background-color: rgb(255 255 255 / 0.06);
+  color: inherit;
+  border-radius: 0.75rem;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-slate-400);
+}
+option {
+  background: #12172e;
+  color: #f4f6ff;
+}
+
+.vidro {
+  background: var(--color-card);
+  border: 1px solid rgb(255 255 255 / 0.09);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px -12px rgb(0 0 0 / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.05);
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.vidro:hover {
+  border-color: rgb(159 134 255 / 0.32);
+}
+
+.texto-brilho {
+  background: linear-gradient(90deg, #b9a8ff, #67e8f9, #ffb48a, #b9a8ff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brilho 6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- Campus (jogo) ---- */
+@keyframes passo-a { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+@keyframes passo-b { 0%, 100% { transform: translateY(-2.5px); } 50% { transform: translateY(0); } }
+@keyframes balancar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+@keyframes respirar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.8px); } }
+@keyframes balao { from { opacity: 0; transform: translateY(4px) scale(0.9); } to { opacity: 1; transform: none; } }
+
+.tile { transition: filter 0.15s; cursor: pointer; }
+.tile:hover { filter: brightness(1.28); }
+.moldura-pixel {
+  border: 4px solid #1c1530;
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px #7c5cff, 0 14px 40px -10px rgb(0 0 0 / 0.7);
+  image-rendering: pixelated;
+}
